@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hourly Pay Calculator</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for Theming System */
+        :root {
+            --bg-color: #0a0a0a;
+            --container-bg: rgba(255, 255, 255, 0.03);
+            --container-border: rgba(255, 94, 0, 0.2);
+            --backdrop: blur(10px);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.8);
+            --accent-1: #FF5E00;
+            --accent-2: #00B2FF;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 94, 0, 0.3);
+            --input-focus: #FF5E00;
+            --focus-glow: 0 0 20px rgba(255, 94, 0, 0.3);
+            --result-bg: rgba(0, 178, 255, 0.1);
+            --result-border: rgba(0, 178, 255, 0.3);
+            --font-heading: 'Orbitron', monospace;
+            --font-body: 'Rajdhani', sans-serif;
+            --comparison-bg: rgba(255, 94, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --container-border: #333333;
+            --backdrop: none;
+            --text-main: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --accent-1: #bb86fc;
+            --accent-2: #03dac6;
+            --input-bg: #2c2c2c;
+            --input-border: #444444;
+            --input-focus: #bb86fc;
+            --focus-glow: 0 0 0 2px rgba(187, 134, 252, 0.3);
+            --result-bg: #2a2a2a;
+            --result-border: #444444;
+            --font-heading: system-ui, -apple-system, sans-serif;
+            --font-body: system-ui, -apple-system, sans-serif;
+            --comparison-bg: #242424;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f0f2f5cc;
+            --container-bg: #ffffff;
+            --container-border: #e9ecef;
+            --backdrop: none;
+            --text-main: #1a1a1a;
+            --text-muted: #4a5568;
+            --accent-1: #2b6cb0;
+            --accent-2: #3182ce;
+            --input-bg: #ffffff;
+            --input-border: #ccc;
+            --input-focus: #3182ce;
+            --focus-glow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            --result-bg: #edf2f7;
+            --result-border: #cbd5e0;
+            --font-heading: system-ui, -apple-system, sans-serif;
+            --font-body: system-ui, -apple-system, sans-serif;
+            --comparison-bg: #ebf8ff;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        body[data-theme="cyberpunk"] {
+            background-image: 
+                radial-gradient(circle at 25% 25%, transparent 2%, rgba(255, 94, 0, 0.03) 2%, rgba(255, 94, 0, 0.03) 3%, transparent 3%),
+                radial-gradient(circle at 75% 75%, transparent 2%, rgba(0, 178, 255, 0.03) 2%, rgba(0, 178, 255, 0.03) 3%, transparent 3%);
+            background-size: 80px 80px;
+        }
+
+        .calculator-container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--container-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: var(--backdrop);
+            width: 100%;
+            max-width: 650px;
+            transition: all 0.4s ease;
+        }
+
+        h2 { 
+            margin-top: 0; 
+            font-family: var(--font-heading);
+            color: var(--accent-1);
+            border-bottom: 2px solid var(--container-border); 
+            padding-bottom: 12px;
+            font-size: 1.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        body[data-theme="cyberpunk"] h2 {
+            background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 94, 0, 0.3);
+        }
+
+        .controls-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        select, input {
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        select option {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: var(--focus-glow);
+        }
+        
+        .company-section {
+            background: rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid var(--container-border);
+        }
+
+        body[data-theme="light"] .company-section {
+            background: #f8f9fa;
+        }
+        
+        .calc-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: end;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        label { 
+            font-size: 0.9em; 
+            font-weight: 600; 
+            color: var(--text-muted); 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .result-box {
+            padding: 12px;
+            background: var(--result-bg);
+            border-radius: 6px;
+            font-weight: bold;
+            color: var(--accent-2);
+            border: 1px dashed var(--result-border);
+            height: 44px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            font-family: var(--font-heading);
+            gap: 4px;
+        }
+        
+        .company-total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--accent-1);
+            margin-top: 12px;
+            font-family: var(--font-heading);
+            padding-top: 12px;
+            border-top: 1px solid var(--container-border);
+        }
+
+        [dir="rtl"] .company-total {
+            text-align: left;
+        }
+
+        .comparison-section {
+            background: var(--comparison-bg);
+            border: 2px dashed var(--accent-1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .comparison-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--accent-1);
+            margin: 0;
+            font-family: var(--font-heading);
+        }
+
+        .footer-link {
+            margin-top: 25px;
+            font-family: var(--font-heading);
+            font-size: 0.9em;
+        }
+
+        .footer-link a {
+            color: var(--accent-1);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link a:hover {
+            color: var(--accent-2);
+            text-shadow: 0 0 10px rgba(0, 178, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .calculator-container { padding: 20px; }
+            .calc-row { grid-template-columns: 1fr; gap: 12px; }
+            .result-box { justify-content: flex-start; }
+            h2 { font-size: 1.4em; }
+        }
+    </style>
+</head>
+<body data-theme="cyberpunk" dir="ltr">
+
+<div class="calculator-container">
+    <h2 data-i18n="title">Hourly Pay Comparison</h2>
+    
+    <div class="controls-header">
+        <div class="control-group">
+            <label for="languageSelect" data-i18n="langLabel">Language</label>
+            <select id="languageSelect">
+                <option value="en" selected>English</option>
+                <option value="es">Español (Spanish)</option>
+                <option value="zh">中文 (Chinese)</option>
+                <option value="tl">Tagalog</option>
+                <option value="vi">Tiếng Việt (Vietnamese)</option>
+                <option value="ar">العربية (Arabic)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="currency" data-i18n="currLabel">Currency</label>
+            <select id="currency">
+                <option value="$" selected>USD ($)</option>
+                <option value="MX$">MXN (MX$)</option>
+                <option value="C$">CAD (C$)</option>
+                <option value="€">EUR (€)</option>
+                <option value="£">GBP (£)</option> 
+                <option value="A$">AUD (A$)</option>
+                <option value="NZ$">NZD (NZ$)</option>
+                <option value="¥">JPY (¥)</option>
+                <option value="CHF">CHF (CHF)</option>
+                <option value="¥">CNY (¥)</option>
+                <option value="HK$">HKD (HK$)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="themeSelect" data-i18n="themeLabel">Interface Theme</label>
+            <select id="themeSelect">
+                <option value="cyberpunk" data-i18n="themeCyber" selected>Cyberpunk (Electric Xtra)</option>
+                <option value="dark" data-i18n="themeDark">Standard Dark</option>
+                <option value="light" data-i18n="themeLight">Light Theme</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="company-section">
+        <div class="input-group" style="margin-bottom: 20px;">
+            <label for="c1Name" data-i18n="c1NameLabel">First Company Name</label>
+            <input type="text" id="c1Name" data-i18n-ph="placeholderName" placeholder="Enter name...">
+        </div>
+        
+        <div class="calc-row">
+            <div class="input-group">
+                <label data-i18n="regHours">Regular Hours</label>
+                <input type="number" id="c1RegHours" placeholder="0" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="payRate">Pay Rate</label>
+                <input type="number" id="c1RegRate" placeholder="0.00" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="regRes">Regular Result</label>
+                <div class="result-box"><span class="sym">$</span><span id="c1RegRes">0.00</span></div>
+            </div>
+        </div>
+
+        <div class="calc-row">
+            <div class="input-group">
+                <label data-i18n="otHours">Overtime Hours</label>
+                <input type="number" id="c1OtHours" placeholder="0" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="payRate">Pay Rate</label>
+                <input type="number" id="c1OtRate" placeholder="0.00" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="otRes">Overtime Result</label>
+                <div class="result-box"><span class="sym">$</span><span id="c1OtRes">0.00</span></div>
+            </div>
+        </div>
+        
+        <div class="company-total">
+            <span data-i18n="total">Total:</span> <span class="sym">$</span><span id="c1Total">0.00</span>
+        </div>
+    </div>
+
+    <div class="company-section">
+        <div class="input-group" style="margin-bottom: 20px;">
+            <label for="c2Name" data-i18n="c2NameLabel">Second Company Name</label>
+            <input type="text" id="c2Name" data-i18n-ph="placeholderName" placeholder="Enter name...">
+        </div>
+        
+        <div class="calc-row">
+            <div class="input-group">
+                <label data-i18n="regHours">Regular Hours</label>
+                <input type="number" id="c2RegHours" placeholder="0" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="payRate">Pay Rate</label>
+                <input type="number" id="c2RegRate" placeholder="0.00" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="regRes">Regular Result</label>
+                <div class="result-box"><span class="sym">$</span><span id="c2RegRes">0.00</span></div>
+            </div>
+        </div>
+
+        <div class="calc-row">
+            <div class="input-group">
+                <label data-i18n="otHours">Overtime Hours</label>
+                <input type="number" id="c2OtHours" placeholder="0" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="payRate">Pay Rate</label>
+                <input type="number" id="c2OtRate" placeholder="0.00" min="0" step="any">
+            </div>
+            <div class="input-group">
+                <label data-i18n="otRes">Overtime Result</label>
+                <div class="result-box"><span class="sym">$</span><span id="c2OtRes">0.00</span></div>
+            </div>
+        </div>
+        
+        <div class="company-total">
+            <span data-i18n="total">Total:</span> <span class="sym">$</span><span id="c2Total">0.00</span>
+        </div>
+    </div>
+
+    <div class="comparison-section">
+        <p class="comparison-text" id="comparisonOutput">
+            <span id="outputC1Name">Company 1</span> 
+            <span data-i18n="vs">vs</span> 
+            <span id="outputC2Name">Company 2</span> 
+            <span data-i18n="diff">Difference:</span> 
+            <span class="sym">$</span><span id="finalDiff">0.00</span>
+        </p>
+    </div>
+</div>
+
+<div class="footer-link">
+    <a href="https://privacy-policy-ten-roan.vercel.app" data-i18n="privacyLink">Privacy Policy</a>
+</div>
+
+<script>
+    // --- Translation Dictionary ---
+    const translations = {
+        en: {
+            title: "Pay Comparison", langLabel: "Language", currLabel: "Currency", themeLabel: "Interface Theme",
+            themeCyber: "Cyberpunk", themeDark: "Standard Dark", themeLight: "Soft Light",
+            c1NameLabel: "First Company Name", c2NameLabel: "Second Company Name", placeholderName: "Enter name...",
+            regHours: "Regular Hours", payRate: "Pay Rate", regRes: "Regular Result",
+            otHours: "Overtime Hours", otRes: "Overtime Result", total: "Total:",
+            vs: "vs", diff: "Difference:", defaultC1: "Company 1", defaultC2: "Company 2",
+            privacyLink: "Privacy Policy" // Added for footer link
+        },
+        es: {
+            title: "Comparación de Pago", langLabel: "Idioma", currLabel: "Moneda", themeLabel: "Tema de Interfaz",
+            themeCyber: "Cyberpunk", themeDark: "Oscuro Estándar", themeLight: "Luz Suave",
+            c1NameLabel: "Nombre de la 1ª Empresa", c2NameLabel: "Nombre de la 2ª Empresa", placeholderName: "Ingrese nombre...",
+            regHours: "Horas Normales", payRate: "Tarifa", regRes: "Resultado Normal",
+            otHours: "Horas Extras", otRes: "Resultado Extra", total: "Total:",
+            vs: "vs", diff: "Diferencia:", defaultC1: "Empresa 1", defaultC2: "Empresa 2",
+            privacyLink: "Política de Privacidad"
+        },
+        zh: {
+            title: "薪资比较", langLabel: "语言", currLabel: "货币", themeLabel: "界面主题",
+            themeCyber: "赛博朋克", themeDark: "标准暗色", themeLight: "柔和亮色",
+            c1NameLabel: "第一家公司名称", c2NameLabel: "第二家公司名称", placeholderName: "输入名称...",
+            regHours: "正常工作时间", payRate: "工资率", regRes: "正常薪资",
+            otHours: "加班时间", otRes: "加班薪资", total: "总计:",
+            vs: "与", diff: "差额:", defaultC1: "公司 1", defaultC2: "公司 2",
+            privacyLink: "隐私政策"
+        },
+        tl: {
+            title: "Paghahambing ng Sahod", langLabel: "Wika", currLabel: "Pera", themeLabel: "Tema ng Interface",
+            themeCyber: "Cyberpunk", themeDark: "Karaniwang Madilim", themeLight: "Banayad na Liwanag",
+            c1NameLabel: "Pangalan ng Unang Kumpanya", c2NameLabel: "Pangalan ng 2nd Kumpanya", placeholderName: "Ipasok ang pangalan...",
+            regHours: "Karaniwang Oras", payRate: "Antas ng Sahod", regRes: "Karaniwang Resulta",
+            otHours: "Oras ng Overtime", otRes: "Resulta ng Overtime", total: "Kabuuan:",
+            vs: "laban sa", diff: "Pagkakaiba:", defaultC1: "Kumpanya 1", defaultC2: "Kumpanya 2",
+            privacyLink: "Patakaran sa Privacy"
+        },
+        vi: {
+            title: "So Sánh Lương", langLabel: "Ngôn Ngữ", currLabel: "Tiền Tệ", themeLabel: "Chủ Đề Giao Diện",
+            themeCyber: "Cyberpunk", themeDark: "Tối Tiêu Chuẩn", themeLight: "Sáng Nhẹ",
+            c1NameLabel: "Tên Công Ty Thứ Nhất", c2NameLabel: "Tên Công Ty Thứ Hai", placeholderName: "Nhập tên...",
+            regHours: "Giờ Bình Thường", payRate: "Mức Lương", regRes: "Kết Quả BT",
+            otHours: "Giờ Làm Thêm", otRes: "Kết Quả Làm Thêm", total: "Tổng Cộng:",
+            vs: "so với", diff: "Chênh Lệch:", defaultC1: "Công Ty 1", defaultC2: "Công Ty 2",
+            privacyLink: "Chính Sách Bảo Mật"
+        },
+        ar: {
+            title: "مقارنة الدفع", langLabel: "اللغة", currLabel: "العملة", themeLabel: "سمة الواجهة",
+            themeCyber: "سايبر بانك", themeDark: "داكن قياسي", themeLight: "ضوء ناعم",
+            c1NameLabel: "اسم الشركة الأولى", c2NameLabel: "اسم الشركة الثانية", placeholderName: "أدخل الاسم...",
+            regHours: "الساعات العادية", payRate: "معدل الدفع", regRes: "النتيجة العادية",
+            otHours: "ساعات الإضافي", otRes: "نتيجة الإضافي", total: "الإجمالي:",
+            vs: "مقابل", diff: "الفرق:", defaultC1: "الشركة 1", defaultC2: "الشركة 2",
+            privacyLink: "سياسة الخصوصية"
+        }
+    };
+
+    // --- Core Logic Elements ---
+    let currentLang = 'en';
+    const languageSelect = document.getElementById('languageSelect');
+    const themeSelect = document.getElementById('themeSelect');
+    
+    // --- Theme Switcher Logic ---
+    themeSelect.addEventListener('change', function() {
+        document.body.setAttribute('data-theme', this.value);
+    });
+
+    // --- Language Switcher Logic ---
+    languageSelect.addEventListener('change', function() {
+        currentLang = this.value;
+        const dict = translations[currentLang];
+        
+        document.body.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(dict[key]) el.textContent = dict[key];
+        });
+
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+            const key = el.getAttribute('data-i18n-ph');
+            if(dict[key]) el.setAttribute('placeholder', dict[key]);
+        });
+
+        calculate();
+    });
+
+    // --- Calculator Logic ---
+    const inputs = [
+        'c1Name', 'c1RegHours', 'c1RegRate', 'c1OtHours', 'c1OtRate',
+        'c2Name', 'c2RegHours', 'c2RegRate', 'c2OtHours', 'c2OtRate', 'currency'
+    ];
+    
+    const el = {};
+    inputs.forEach(id => el[id] = document.getElementById(id));
+    
+    const c1RegRes = document.getElementById('c1RegRes'), c1OtRes = document.getElementById('c1OtRes'), c1Total = document.getElementById('c1Total');
+    const c2RegRes = document.getElementById('c2RegRes'), c2OtRes = document.getElementById('c2OtRes'), c2Total = document.getElementById('c2Total');
+    const outputC1Name = document.getElementById('outputC1Name'), outputC2Name = document.getElementById('outputC2Name'), finalDiff = document.getElementById('finalDiff');
+    const symbolElements = document.querySelectorAll('.sym');
+
+    function calculate() {
+        const dict = translations[currentLang];
+        
+        const currentSymbol = el.currency.value;
+        symbolElements.forEach(span => span.textContent = currentSymbol);
+        
+        outputC1Name.textContent = el.c1Name.value.trim() || dict.defaultC1;
+        outputC2Name.textContent = el.c2Name.value.trim() || dict.defaultC2;
+
+        const c1RH = parseFloat(el.c1RegHours.value) || 0, c1RR = parseFloat(el.c1RegRate.value) || 0;
+        const c1OH = parseFloat(el.c1OtHours.value) || 0, c1OR = parseFloat(el.c1OtRate.value) || 0;
+        const c2RH = parseFloat(el.c2RegHours.value) || 0, c2RR = parseFloat(el.c2RegRate.value) || 0;
+        const c2OH = parseFloat(el.c2OtHours.value) || 0, c2OR = parseFloat(el.c2OtRate.value) || 0;
+
+        const total1 = (c1RH * c1RR) + (c1OH * c1OR);
+        const total2 = (c2RH * c2RR) + (c2OH * c2OR);
+        const difference = Math.abs(total2 - total1);
+
+        c1RegRes.textContent = (c1RH * c1RR).toFixed(2);
+        c1OtRes.textContent = (c1OH * c1OR).toFixed(2);
+        c1Total.textContent = total1.toFixed(2);
+
+        c2RegRes.textContent = (c2RH * c2RR).toFixed(2);
+        c2OtRes.textContent = (c2OH * c2OR).toFixed(2);
+        c2Total.textContent = total2.toFixed(2);
+
+        finalDiff.textContent = difference.toFixed(2);
+    }
+
+    inputs.forEach(id => el[id].addEventListener('input', calculate));
+</script>
+
+</body>
+</html>
